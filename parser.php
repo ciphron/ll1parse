@@ -2,6 +2,15 @@
 
 include("commmon.php");
 
+class Consumer {
+
+    public function on_begin($id) {}
+    public function on_consume($id, $token) {return true;}
+    public function on_syntax_error($id, $token, $error) {}
+    public function on_end($id) {}
+}
+
+
 class Term {
     public const EPSILON = "EPSILON";
 
@@ -132,12 +141,24 @@ class GrammarBuilder {
 class Parser {
     private $grammar;
     private $id_counter;
+    private $consumer_id_counter;
+    private $consumers;
 
     public function __construct($grammar) {
         $this->grammar = $grammar;
         $this->id_counter = 0;
+        $this->consumers = array();
+        $this->consumer_id_counter = 0;
     }
 
+    public function register_consumer($consumer) {
+         $this->consumers[$this->consumer_id_counter] = $consumer;
+         return $this->consumer_id_counter++;
+    }
+
+    public function deregister_consumer($consumer_id) {
+        unset($this->consumers[$consumer_id]);
+    }
 
     public function parse($tokens) {
         $valid = true;
@@ -146,10 +167,12 @@ class Parser {
         $len = count($tokens);
         $grammar = $this->grammar;
 
+        // notify listeners of begin with id
+        $this->notify_begin($id);
+
         $stack = array();
         array_push($stack, $grammar->starting_nonterminal());
 
-        // notify listeners of begin with id
         while (($term = array_pop($stack)) != NULL) {
 
             if ($position >= $len) {
@@ -157,6 +180,8 @@ class Parser {
                         !$grammar->has_production($term->name,
                                                   Term::EPSILON)) {
                     // notify listeners of syntax error: Expected epsilon
+                    $this->notify_syntax_error($id, NULL,
+                                               "End of input reached");
                     $valid = false;
                     break;
                 }
@@ -169,11 +194,15 @@ class Parser {
             if ($term->is_terminal) {
                if ($term->name == $head_token->type) {
                    // Correct match: consume - notify listeners of consume
+                   $this->notify_consume($id, $head_token);
                    $position++;
 
                }
                else {
                     // Mismatch (error) - notify listeners of syntax error
+                    $expected_type = $term->name;
+                    $this->notify_syntax_error($id, $head_token,
+                         "Token mismatch. Expected token type $expected_type");
                     $valid = false;
                     break;
               }
@@ -199,21 +228,46 @@ class Parser {
                 }
                 else {
                      // Syntax error - notify listeners of error
+                     $this->notify_syntax_error($id, $head_token,
+                                                "Grammar error");
                      $valid = false;
                      break;
                 }
             }
-            
-        }
-        
+         }
 
-        return $valid;
+         $this->notify_end($id);
+
+         return $valid;
     }
+
+    private function notify_begin($id) {
+        foreach ($this->consumers as $consumer) {
+            $consumer->on_begin($id);
+        }
+    }
+
+    private function notify_consume($id, $token) {
+        foreach ($this->consumers as $consumer) {
+            $consumer->on_consume($id, $token);
+        }
+    }
+
+
+    private function notify_syntax_error($id, $token, $error) {
+        foreach ($this->consumers as $consumer) {
+            $consumer->on_syntax_error($id, $token, $error);
+        }
+    }
+
+
+    private function notify_end($id) {
+        foreach ($this->consumers as $consumer) {
+            $consumer->on_end($id);
+        }
+    }
+
+
 }
-
-
-
-//echo "<br/>";
-echo "Done";
 
 
