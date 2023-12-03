@@ -1,12 +1,16 @@
 <?php
 
 class Token {
-      private $type;
-      private $content;
+    public $type;
+    public $content;
 
-      public function __construct($type, $content=NULL) {
-             $this->type = type;
-             $this->content = content;
-      }
+    public function __construct($type, $content=NULL) {
+        $this->type = $type;
+        $this->content = $content;
+    }
+
+    public function type() {
+        return $this->type;
+    }
 }
 
