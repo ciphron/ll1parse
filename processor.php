@@ -2,7 +2,6 @@
 
 include("parser.php");
 
-
 class AbstractConsumer extends Consumer {
 
     private $map;      
@@ -30,7 +29,7 @@ class AbstractConsumer extends Consumer {
 
     public function on_consume($id, $token) {
         $state = $this->map[$id];
-        $this->step($state, $token);
+        $this->map[$id] = $this->step($state, $token);
     }
 
     public function on_syntax_error($id, $token, $error) {
@@ -60,7 +59,7 @@ class Processor extends AbstractConsumer {
       public function process($str) {
           $tokens = $this->scan($str);
           if ($tokens) {
-              $id = $this->parser->parse($token);
+              $id = $this->parser->parse($tokens);
               return $this->output_for_id($id);
           }
           return NULL;
@@ -68,7 +67,7 @@ class Processor extends AbstractConsumer {
 
       // Methods to be overriden by subclasses
 
-      protected function mkstate {return NULL;}
+      protected function mkstate() {return NULL;}
       protected function output($state) {return NULL;}
       protected function step($state, $token) {}
       protected function scan($str) {return NULL;}

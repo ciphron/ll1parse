@@ -1,15 +1,16 @@
 <?php
 
+include("common.php");
 include("processor.php");
 
 class ABProcessor extends Processor {
 
     public function __construct() {
-        parent::__construct('abgrammar.cfg');
+        parent::__construct('/users/staff/mclear/ll1/abgrammar.cfg');
     }
 
 
-    protected function mkstate {
+    protected function mkstate() {
         return array('output' => '');
     }
     
@@ -19,6 +20,7 @@ class ABProcessor extends Processor {
 
     protected function step($state, $token) {
         $state['output'] .= $token->content;
+        return $state;
     }
 
     protected function scan($str) {
@@ -29,13 +31,12 @@ class ABProcessor extends Processor {
             if ($c == 'A') {
                 array_push($tokens, new Token('A', 'A'));
             }
-            else if ($c == 'B') {
+            elseif ($c == 'B') {
                 array_push($tokens, new Token('B', 'B'));
             }
             else {
                 array_push($tokens, new Token('Other', $c));
             }
-            
         }
 
         return $tokens;

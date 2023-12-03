@@ -35,7 +35,7 @@ class Parser {
 
     public function parse($tokens) {
         $valid = true;
-        $id = $id_counter++;
+        $id = $this->id_counter++;
         $position = 0;
         $len = count($tokens);
         $grammar = $this->grammar;
