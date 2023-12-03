@@ -2,12 +2,10 @@
 
 include("processor.php");
 
-
-
 class ABProcessor extends Processor {
 
     public function __construct() {
-        parent::__construct('/users/staff/mclear/ll1/abgrammar.cfg');
+        parent::__construct('abgrammar.cfg');
     }
 
 
@@ -45,26 +43,6 @@ class ABProcessor extends Processor {
 
 }
 
-/*
-$builder = new GrammarBuilder('S', array('A', 'B', 'Other'));
-$builder->add_production('S', array(new Term('A'),
-                                    new Term('T', false)));
-$builder->add_production('S', array(new Term(Term::EPSILON)));
-$builder->add_production('T', array(new Term('B'),
-                                    new Term('S', false)));
-*/
-
-$tokenizer = new ABTokenizer();
-$grammar = read_grammar_from_file('/users/staff/mclear/ll1/grammar.cfg');
-//$grammar->debug();
-
-$parser = new Parser($grammar);
-$consumer = new ABConsumer();
-$parser->register_consumer($consumer);
-
-$str = 'ABAB';
-$tokens = $tokenizer->scan($str);
-echo $parser->parse($tokens);
-echo "<br/>\n";
-
-echo "Done";
+$proc = new ABProcessor();
+$output = $proc->process('ABAB');
+echo "Output:[$output]\n";
