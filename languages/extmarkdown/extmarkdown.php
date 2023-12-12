@@ -2,7 +2,7 @@
 
 const TOKEN_IDENT = 'IDENT';
 const TOKEN_TEXT = 'TEXT';
-const TOKEN_EXLCIAM = 'EXCLAIM';
+const TOKEN_EXCLAIM = 'EXCLAIM';
 const TOKEN_LBRACE = 'LBRACE';
 const TOKEN_RBRACE = 'RBRACE';
 
@@ -17,11 +17,13 @@ class EMDState {
     private $output;
     private $cmd_name;
     private $cmd_args;
+    private $cmd_deck;
 
-    public function __construct() {
+    public function __construct($cmd_deck) {
         $this->stage = STAGE_OPEN;
         $this->in_command = false;
         $this->output = '';
+        $this->cmd_deck = $cmd_deck;
     }
 
 
@@ -38,7 +40,7 @@ class EMDState {
                     // otherwise the command has finished being entered so
                     // it is time to execute it
 
-                    // execute command
+                    $this->output .= $this->cmd_deck->execute($this->cmd_name, $this->cmd_args);
 
 
                     $this->in_command = false;
@@ -71,20 +73,27 @@ class EMDState {
     }
 
     public function get_output() {
+        if ($this->stage == STAGE_OPEN && $this->in_command) {
+            $this->output .= $this->cmd_deck->execute($this->cmd_name, $this->cmd_args);
+            $this->in_command = false;
+        }
+        
         return $this->output;
     }
 }
 
 
 class EMDProcessor extends Processor {
+    private $cmd_deck;
 
-    public function __construct() {
-        parent::__construct('/users/staff/mclear/ll1/emdgrammar.cfg');
+    public function __construct($cmd_deck) {
+        parent::__construct(LL1_LIB_PATH . '/languages/extmarkdown/emdgrammar.cfg');
+        $this->cmd_deck = $cmd_deck;
     }
 
 
     protected function mkstate() {
-        return new EMDState();
+        return new EMDState($this->cmd_deck);
     }
     
     protected function output($state) {
@@ -157,6 +166,10 @@ class EMDProcessor extends Processor {
             }
 
             $prev = $c;
+        }
+
+        if (strlen($text) > 0) {
+            array_push($tokens, new Token(TOKEN_TEXT, $text));
         }
 
         return $tokens;

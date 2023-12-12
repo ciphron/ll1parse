@@ -6,7 +6,7 @@ include("../../processor.php");
 class ABProcessor extends Processor {
 
     public function __construct() {
-        parent::__construct('/users/staff/mclear/ll1/abgrammar.cfg');
+        parent::__construct(LL1_LIB_PATH . '/languages/ablang/abgrammar.cfg');
     }
 
 
