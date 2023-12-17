@@ -9,11 +9,11 @@ X -> \#TOKEN1 <Y>
 where X, Y are non-terminals and TOKEN1 is a terminal (a token type). Each line of the file is a distinct production, and EPSILON is a reserved "token" signifying the empty string. The "AB" language is a trivial toy language that consists of strings that repete the base string "AB" one or more times e.g: "ABAB" and "ABABABABAB". Note a string such as "AAB" is not a member of the language.
 Its .cfg file contains the 3 lines:
 
-S -> \#A <T>
+S -> \#A \<T\>
 
 S -> \#EPSILON
 
-T -> \#B <S>
+T -> \#B \<S\>
 
 
 # Processor Implementation
